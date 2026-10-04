@@ -1,0 +1,14 @@
+{
+  "name": "ciao-udine",
+  "version": "1.0.0",
+  "description": "Ciao, Udine! — a warm, mobile-first Italian course for a French- and Egyptian-Arabic-speaking beginner moving to Udine.",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test tests/*.test.js"
+  }
+}
