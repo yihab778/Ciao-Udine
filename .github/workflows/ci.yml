@@ -1,0 +1,35 @@
+# Checks every pull request (and pushes to other branches) before anything is merged.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Tests and smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check (all JavaScript)
+        run: find public server.js -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Content, exercises, grading and scheduling tests
+        run: npm test
+
+      - name: Server smoke test
+        run: |
+          PORT=5173 node server.js &
+          sleep 2
+          curl -fsS http://localhost:5173/ > /dev/null
+          curl -fsS http://localhost:5173/js/main.js > /dev/null
+          curl -fsS http://localhost:5173/api/health | grep -q '"sharing":true'
+          echo "App and API respond correctly"
