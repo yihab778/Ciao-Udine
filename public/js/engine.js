@@ -68,6 +68,17 @@ export function lessonSteps(lesson, { audio }) {
     if (chunk.length >= 3) steps.push({ type: 'match', items: sample(chunk, Math.min(5, chunk.length)) });
   }
 
+  // Minimal pairs (sounds that change meaning: p/b, v/f, double consonants)
+  if (lesson.pairs?.length) {
+    const byIt = (t) => words.find((w) => w.it === t);
+    for (const [a, b] of shuffle(lesson.pairs)) {
+      const A = byIt(a), B = byIt(b);
+      if (!A || !B) continue;
+      const [target, other] = Math.random() < 0.5 ? [A, B] : [B, A];
+      steps.push({ type: 'minimal', item: target, options: shuffle([target, other]) });
+    }
+  }
+
   if (phrases.length) {
     steps.push({ type: 'discover', items: phrases, phrases: true });
     phrases.forEach((p, i) => {
@@ -75,6 +86,10 @@ export function lessonSteps(lesson, { audio }) {
       else steps.push(buildStep(p, audio && i % 3 === 1));
     });
   }
+
+  // Speaking: listen, repeat aloud, compare with your own recording (private, on-device)
+  const speakPhrase = phrases.find((p) => wordCount(p.it) <= 7) || phrases[0];
+  if (speakPhrase) steps.push({ type: 'speak', item: speakPhrase });
 
   // Active recall to finish: two short words and one short phrase
   const typeWords = sample(words.filter((w) => wordCount(w.it) <= 3), 2);

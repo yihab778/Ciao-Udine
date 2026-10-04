@@ -27,6 +27,13 @@ export const icons = {
   shield: (s) => S('<path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>', s),
   download: (s) => S('<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>', s),
   upload: (s) => S('<path d="M12 21V9M7 14l5-5 5 5M4 3h16"/>', s),
+  lifebuoy: (s) => S('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>', s),
+  mic: (s) => S('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>', s),
+  stop: (s) => S('<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', s),
+  play: (s) => S('<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>', s, 'class="flip-rtl"'),
+  help: (s) => S('<circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.3-2.7 4"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/>', s),
+  flag: (s) => S('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>', s),
+  expand: (s) => S('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', s),
   // unit icons
   wave: (s) => S('<path d="M7 11.5V6.5a1.5 1.5 0 0 1 3 0V11"/><path d="M10 10V4.5a1.5 1.5 0 0 1 3 0V10"/><path d="M13 10V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6.5 6.5 0 0 1-5.3-2.7L3.5 14.6a1.5 1.5 0 0 1 2.3-2L7 14"/>', s),
   cup: (s) => S('<path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 2.5c-.8 1 .8 2 0 3M12 2.5c-.8 1 .8 2 0 3"/><path d="M3 22h14"/>', s),

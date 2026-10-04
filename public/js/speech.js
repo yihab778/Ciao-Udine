@@ -2,7 +2,8 @@
 // Gracefully degrades: if no Italian voice exists, the app hides audio-only
 // exercises and shows text instead.
 
-const PREFERRED = [/google.*italiano/i, /alice/i, /federica/i, /elsa/i, /isabella/i, /paola/i, /luca/i, /diego/i, /cosimo/i];
+// Natural / neural / premium voices first: robotic TTS is a top complaint about language apps.
+const PREFERRED = [/natural|neural/i, /premium|enhanced/i, /google.*italiano/i, /alice/i, /federica/i, /elsa/i, /isabella/i, /paola/i, /luca/i, /diego/i, /cosimo/i];
 
 let voice = null;
 let status = 'checking'; // 'checking' | 'ok' | 'fallback' | 'none'

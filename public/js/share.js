@@ -28,6 +28,7 @@ export function buildSummary(state) {
     lessonsDone: LESSONS.filter((l) => state.lessons[l.id]).length,
     lessonsTotal: LESSONS.length,
     words: Object.keys(state.srs).length,
+    missions: Object.keys(state.missions || {}).length,
     unitsDone,
     milestonesDone,
     current: cu.id,
