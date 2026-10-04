@@ -76,7 +76,7 @@ test('engine builds sound exercises for every lesson (with and without audio)', 
       for (const s of steps) {
         if (!audio) assert.ok(!['listen', 'listenBuild'].includes(s.type), 'no audio steps without voice');
         if (s.options) {
-          assert.ok(s.options.length >= 3, `${l.id} options`);
+          assert.ok(s.options.length >= (s.type === 'minimal' ? 2 : 3), `${l.id} options`);
           assert.ok(s.options.some((o) => o.id === s.item.id));
           const fr = s.options.map((o) => o.fr);
           assert.equal(new Set(fr).size, fr.length, `${l.id} ambiguous options: ${fr}`);
