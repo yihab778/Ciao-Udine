@@ -1,12 +1,12 @@
 // Network-first service worker: always fresh when online, fully usable offline.
-const CACHE = 'ciao-udine-v1';
+const CACHE = 'ciao-udine-v2';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'icons/icon.svg', 'icons/icon-192.png',
   'js/main.js', 'js/config.js', 'js/util.js', 'js/i18n.js', 'js/store.js', 'js/srs.js', 'js/grade.js', 'js/speech.js',
   'js/plan.js', 'js/share.js', 'js/art.js', 'js/engine.js',
-  'js/content/index.js', 'js/content/units-a.js', 'js/content/units-b.js', 'js/content/units-c.js',
+  'js/content/index.js', 'js/content/units-a.js', 'js/content/units-b.js', 'js/content/units-c.js', 'js/content/missions.js', 'js/content/phrasebook.js',
   'js/views/onboarding.js', 'js/views/today.js', 'js/views/path.js', 'js/views/runner.js', 'js/views/scene.js',
-  'js/views/review.js', 'js/views/words.js', 'js/views/progress.js', 'js/views/settings.js', 'js/views/share.js', 'js/views/partner.js',
+  'js/views/review.js', 'js/views/words.js', 'js/views/progress.js', 'js/views/settings.js', 'js/views/share.js', 'js/views/partner.js', 'js/views/phrasebook.js',
 ];
 
 self.addEventListener('install', (e) => {

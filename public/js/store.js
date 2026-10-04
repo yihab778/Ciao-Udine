@@ -17,6 +17,8 @@ export function freshState() {
       onboarded: false,
       rate: 0.9,             // speech rate
       autoplay: true,
+      textScale: 'normal',   // 'normal' | 'large'
+      remindAt: '19:00',
     },
     lessons: {},             // id -> { doneAt, firstTry, total, runs }
     srs: {},                 // itemId -> { due, ivl, ease, reps, lapses, seen }
@@ -28,6 +30,11 @@ export function freshState() {
       lastSharedAt: null,
     },
     cheers: [],
+    accepted: {},            // itemId -> answers the learner said were right
+    reports: [],             // content problems she flagged, to send to her partner
+    missions: {},            // unitId -> date the real-life mission was done
+    lastBackupAt: null,
+    dismissed: {},           // one-off tips she closed
   };
 }
 
@@ -41,6 +48,7 @@ function load() {
       ...base, ...parsed,
       profile: { ...base.profile, ...parsed.profile },
       share: { ...base.share, ...parsed.share },
+      accepted: parsed.accepted || {}, reports: parsed.reports || [], missions: parsed.missions || {}, dismissed: parsed.dismissed || {},
     };
   } catch (e) {
     console.warn('Could not read saved progress', e);
@@ -69,7 +77,8 @@ export const store = {
   subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
   replace(next) {
     const base = freshState();
-    this.state = { ...base, ...next, profile: { ...base.profile, ...next.profile }, share: { ...base.share, ...next.share } };
+    this.state = { ...base, ...next, profile: { ...base.profile, ...next.profile }, share: { ...base.share, ...next.share },
+      accepted: next.accepted || {}, reports: next.reports || [], missions: next.missions || {}, dismissed: next.dismissed || {} };
     this.save();
     listeners.forEach((l) => l(this.state));
   },
@@ -83,10 +92,10 @@ export const store = {
     d.sec += s;
     this.save();
   },
-  bumpDay(field) {
+  bumpDay(field, amount = 1) {
     const k = dayKey();
     const d = (this.state.days[k] ||= { sec: 0, lessons: 0, reviews: 0 });
-    d[field] = (d[field] || 0) + 1;
+    d[field] = (d[field] || 0) + amount;
   },
 };
 

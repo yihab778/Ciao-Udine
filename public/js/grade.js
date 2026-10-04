@@ -76,6 +76,14 @@ export function check(answer, expected, opt = {}) {
     }
   }
 
+  // 2b · optional subject pronoun (io sono stanca = sono stanca)
+  const PRON = /^(io|tu|lui|lei|noi|voi|loro)\s+/;
+  for (const ref of refs) {
+    if (stripAccents(a.replace(PRON, '')) === stripAccents(ref.replace(PRON, '')) && (PRON.test(a) || PRON.test(ref))) {
+      return { ok: true, kind: 'pronoun', note: msg('Juste ! En italien, le pronom sujet est facultatif : *' + list[refs.indexOf(ref)] + '* suffit souvent.', 'صح! في الإيطالي الضمير مش لازم: *' + list[refs.indexOf(ref)] + '* كفاية غالباً.') };
+    }
+  }
+
   const ref = refs[0];
   const refShown = list[0];
   const A = stripAccents(a), R = stripAccents(ref);

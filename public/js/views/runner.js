@@ -1,4 +1,5 @@
-import { lessonById, unitById, MILESTONES, UNITS } from '../content/index.js';
+import { lessonById, unitById, MILESTONES, UNITS, ITEMS } from '../content/index.js';
+import { APP } from '../config.js';
 import { esc, itx, sup, rich, tr, meaning, pick, shuffle, dayKey } from '../util.js';
 import { icons, confetti } from '../art.js';
 import { num } from '../i18n.js';
@@ -9,10 +10,34 @@ import { unitProgress } from '../plan.js';
 import { buildSummary, live } from '../share.js';
 import { runScene } from './scene.js';
 
-export function startLesson(root, app, id) {
+// ── Interrupted lessons resume where she left them (a phone call shouldn't cost a lesson)
+const RESUME_KEY = `${APP.storageKey}:resume`;
+const MAX_RESUME_AGE = 3 * 24 * 3600 * 1000;
+const itemReplacer = (k, v) => (v && typeof v === 'object' && v.lessonId && ITEMS.has(v.id) ? { $i: v.id } : v);
+const itemReviver = (k, v) => (v && typeof v === 'object' && v.$i ? ITEMS.get(v.$i) : v);
+
+export function getResume(lessonId) {
+  try {
+    const r = JSON.parse(localStorage.getItem(RESUME_KEY) || 'null', itemReviver);
+    if (!r || Date.now() - r.at > MAX_RESUME_AGE) return null;
+    return !lessonId || r.lessonId === lessonId ? r : null;
+  } catch { return null; }
+}
+function saveResume(data) {
+  try { localStorage.setItem(RESUME_KEY, JSON.stringify({ ...data, at: Date.now() }, itemReplacer)); } catch { /* optional */ }
+}
+export function clearResume() { try { localStorage.removeItem(RESUME_KEY); } catch { /* optional */ } }
+
+export async function startLesson(root, app, id) {
   const lesson = lessonById(id);
   if (!lesson) { app.navigate('#/path'); return; }
   if (lesson.kind === 'scene') return runScene(root, app, lesson, { onDone: (stats) => finishLesson(app, lesson, new Map(), stats) });
+  const saved = getResume(lesson.id);
+  if (saved && saved.i > 1) {
+    const go = await app.confirm({ title: app.t('resume.title'), text: app.t('resume.text'), yes: app.t('resume.yes'), no: app.t('resume.no') });
+    if (go) return runSession(root, app, { mode: 'lesson', lesson, steps: saved.steps, resume: saved });
+  }
+  clearResume();
   const steps = lessonSteps(lesson, { audio: app.speech.available });
   runSession(root, app, { mode: 'lesson', lesson, steps });
 }
@@ -65,9 +90,16 @@ export function runSession(root, app, opts) {
   const P = app.P;
   const S = {
     steps: opts.steps.slice(), i: 0, results: new Map(), retried: new Set(),
-    last: Date.now(), start: Date.now(), answer: null, checked: false,
+    last: Date.now(), start: Date.now(), answer: null, checked: false, noSpeak: false,
   };
-  const answerable = (st) => !['intro', 'note', 'discover'].includes(st.type);
+  if (opts.resume) {
+    S.i = opts.resume.i; S.results = new Map(opts.resume.results); S.retried = new Set(opts.resume.retried);
+  }
+  const persist = () => {
+    if (opts.mode !== 'lesson') return;
+    saveResume({ lessonId: opts.lesson.id, steps: S.steps, i: S.i, results: [...S.results], retried: [...S.retried] });
+  };
+  const answerable = (st) => !['intro', 'note', 'discover', 'speak'].includes(st.type);
   const tick = () => { const now = Date.now(); app.store.addTime((now - S.last) / 1000); S.last = now; };
 
   root.innerHTML = `
@@ -75,6 +107,7 @@ export function runSession(root, app, opts) {
     <div class="run-top">
       <button class="icon-btn" id="quit" aria-label="${esc(t('close'))}">${icons.close(24)}</button>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i style="width:0%"></i></div>
+      ${opts.lesson?.note ? `<button class="icon-btn" id="help" aria-label="${esc(t('lesson.help'))}" title="${esc(t('lesson.help'))}">${icons.help(24)}</button>` : ''}
     </div>
     <main class="run-body" id="step" tabindex="-1" aria-live="polite"></main>
     <div class="run-foot"><button class="btn block" id="foot"></button></div>
@@ -93,7 +126,13 @@ export function runSession(root, app, opts) {
   root.querySelector('#quit').addEventListener('click', async () => {
     if (S.i === 0) return history.length > 1 ? history.back() : app.navigate('#/today');
     const ok = await app.confirm({ title: t('lesson.quit'), text: opts.mode === 'lesson' ? t('lesson.quitText') : '', yes: t('lesson.quitYes'), no: t('lesson.quitNo') });
-    if (ok) { tick(); app.navigate(opts.mode === 'review' ? '#/review' : opts.mode === 'practice' ? '#/path' : '#/today'); }
+    if (ok) { tick(); persist(); app.navigate(opts.mode === 'review' ? '#/review' : opts.mode === 'practice' ? '#/path' : '#/today'); }
+  });
+
+  root.querySelector('#help')?.addEventListener('click', () => {
+    const l = opts.lesson;
+    const paras = (l.note?.[lang] || l.note?.fr || []).map((p) => `<p style="margin-top:8px">${rich(P(p))}</p>`).join('');
+    app.sheet({ title: lessonTitle(l), html: `${paras}${l.compare ? `<div class="aside compare"><p>${rich(P(tr(l.compare, lang)))}</p></div>` : ''}` });
   });
 
   root.querySelector('.runner').addEventListener('click', tick, true);
@@ -122,6 +161,8 @@ export function runSession(root, app, opts) {
     barEl.parentElement.setAttribute('aria-valuenow', Math.round((S.i / S.steps.length) * 100));
     const st = S.steps[S.i];
     if (!st) return finish();
+    if (st.type === 'speak' && S.noSpeak) { S.i++; return render(); }
+    persist();
     const R = renderers[st.type];
     R(st);
     body.focus({ preventScroll: true });
@@ -170,7 +211,89 @@ export function runSession(root, app, opts) {
     build(st) { buildStepView(st, false); },
     listenBuild(st) { buildStepView(st, true); },
     type(st) { typeStep(st); },
+    minimal(st) { minimalStep(st); },
+    speak(st) { speakStep(st); },
   };
+
+  // Minimal pairs: train the ear on sounds that change meaning (p/b, v/f, double consonants)
+  function minimalStep(st) {
+    const item = st.item;
+    const audio = app.speech.available;
+    body.innerHTML = `<div class="prompt-label">${esc(audio ? t('ex.minimal') : t('ex.minimalRead'))}</div>
+      ${audio ? `<div class="listen-center"><div class="row">
+          <button class="play big main" data-say="${esc(item.it)}" aria-label="${esc(t('listen'))}">${icons.sound(38)}</button>
+          <button class="play" data-say="${esc(item.it)}" data-slow="1" aria-label="${esc(t('slow'))}">${icons.turtle(22)}</button></div></div>`
+        : `<div class="prompt-big">${sup(P(meaning(item, lang)), lang)}</div>`}
+      <div class="options pair" role="group">${st.options.map((o, i) => `
+        <button class="option" data-id="${o.id}" aria-pressed="false"><span class="k">${i + 1}</span>${itx(o.it)}</button>`).join('')}</div>`;
+    setFoot(esc(t('check')), false);
+    body.querySelectorAll('.option').forEach((b) => b.addEventListener('click', () => {
+      if (S.checked) return;
+      body.querySelectorAll('.option').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true'); S.answer = b.dataset.id; setFoot(esc(t('check')), true);
+    }));
+    if (audio) setTimeout(() => playItem(item), 250);
+    S.check = () => {
+      body.querySelectorAll('.option').forEach((b) => {
+        b.disabled = true;
+        if (b.dataset.id === item.id) b.classList.add('correct'); else if (b.dataset.id === S.answer) b.classList.add('wrong');
+      });
+      const other = st.options.find((o) => o.id !== item.id);
+      return { ok: S.answer === item.id, item, kind: 'pair', note: S.answer === item.id ? null : {
+        fr: `*${item.it}* = ${item.fr} · *${other.it}* = ${other.fr}`, ar: `*${item.it}* = ${item.ar} · *${other.it}* = ${other.ar}` } };
+    };
+  }
+
+  // Shadowing: listen, repeat aloud, record and compare. Audio never leaves the device.
+  function speakStep(st) {
+    const item = st.item;
+    const canRecord = !!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+    let rec = null, chunks = [], myUrl = null, timer = null, stream = null;
+    body.innerHTML = `<div class="prompt-label">${esc(t('ex.speak'))}</div>
+      <div class="prompt-big">${app.speech.available ? `<button class="play main" data-say="${esc(item.it)}" aria-label="${esc(t('listen'))}">${icons.sound(20)}</button>` : ''}${itx(P(item.it))}</div>
+      <p class="muted" style="margin-top:6px">${sup(P(meaning(item, lang)), lang)}</p>
+      <div class="speak-box">
+        ${canRecord ? `<button class="rec" id="rec" aria-label="${esc(t('speak.record'))}">${icons.mic(34)}</button>
+          <span id="rec-l" class="faint">${esc(t('speak.record'))}</span>
+          <button class="btn secondary small" id="mine" hidden>${icons.play(16)} ${esc(t('speak.mine'))}</button>`
+        : `<p class="faint">${esc(t('speak.noMic'))}</p>`}
+      </div>
+      <p class="faint row" style="margin-top:14px">${icons.shield(16)} <span>${esc(t('speak.private'))}</span></p>
+      <button class="btn ghost small" id="cant" style="margin-top:6px">${esc(t('speak.cant'))}</button>`;
+    setFoot(esc(canRecord ? t('speak.done') : t('speak.said')), !canRecord);
+    if (app.speech.available) setTimeout(() => playItem(item), 250);
+    const recBtn = body.querySelector('#rec');
+    const label = body.querySelector('#rec-l');
+    const mine = body.querySelector('#mine');
+    const stopRec = () => { if (rec && rec.state === 'recording') rec.stop(); clearTimeout(timer); };
+    recBtn?.addEventListener('click', async () => {
+      if (rec && rec.state === 'recording') return stopRec();
+      try {
+        app.speech.stop();
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chunks = []; rec = new MediaRecorder(stream);
+        rec.ondataavailable = (e) => chunks.push(e.data);
+        rec.onstop = () => {
+          stream.getTracks().forEach((tr) => tr.stop());
+          if (myUrl) URL.revokeObjectURL(myUrl);
+          myUrl = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || 'audio/webm' }));
+          recBtn.classList.remove('on'); recBtn.innerHTML = icons.mic(34);
+          label.textContent = t('speak.again'); mine.hidden = false;
+          setFoot(esc(t('speak.done')), true);
+          new Audio(myUrl).play().catch(() => {});
+        };
+        rec.start();
+        recBtn.classList.add('on'); recBtn.innerHTML = icons.stop(30); label.textContent = t('speak.recording');
+        timer = setTimeout(stopRec, 8000);
+      } catch {
+        label.textContent = t('speak.denied');
+        setFoot(esc(t('speak.said')), true);
+      }
+    });
+    mine?.addEventListener('click', () => { if (myUrl) new Audio(myUrl).play().catch(() => {}); });
+    body.querySelector('#cant').addEventListener('click', () => { stopRec(); S.noSpeak = true; next(); });
+    S.passiveCleanup = () => { stopRec(); if (myUrl) setTimeout(() => URL.revokeObjectURL(myUrl), 1000); };
+  }
 
   function optionStep(st, mode) {
     const item = st.item;
@@ -301,7 +424,8 @@ export function runSession(root, app, opts) {
     setTimeout(() => ta.focus(), 50);
     S.check = () => {
       ta.readOnly = true;
-      return { ...check(S.answer, [P(item.it)], { frenchMeaning: item.fr }), item };
+      const accepted = app.store.state.accepted?.[item.id] || [];
+      return { ...check(S.answer, [P(item.it), ...accepted], { frenchMeaning: item.fr }), item };
     };
   }
 
@@ -320,8 +444,30 @@ export function runSession(root, app, opts) {
           <span>${itx(P(item.it))}<br><span class="muted" style="font-weight:600">${sup(P(meaning(item, lang)), lang)}</span></span></div>` : ''}
         ${res.willRetry ? `<p class="faint">${esc(t('fb.again'))}</p>` : ''}
       </div>
-      <button class="btn block ${res.ok ? 'good' : 'bad'}" id="sheet-next">${esc(t('continue'))} ${icons.arrow(18)}</button>`;
+      <button class="btn block ${res.ok ? 'good' : 'bad'}" id="sheet-next">${esc(t('continue'))} ${icons.arrow(18)}</button>
+      <div class="row" style="justify-content:center;margin-top:6px">
+        ${!res.ok && ['type', 'build', 'listenBuild'].includes(S.steps[S.i].type) ? `<button class="btn ghost small" id="override">${icons.check(16)} ${esc(t('fb.override'))}</button>` : ''}
+        <button class="btn ghost small" id="report">${icons.flag(16)} ${esc(t('fb.report'))}</button>
+      </div>`;
     sheet.querySelector('#sheet-next').addEventListener('click', next);
+    sheet.querySelector('#override')?.addEventListener('click', () => {
+      // She knows better than a pattern matcher: count it right and remember her answer.
+      S.results.set(item.id, true);
+      const mine = Array.isArray(S.answer) ? S.answer.join(' ') : String(S.answer || '');
+      S.steps = S.steps.filter((x, idx) => idx <= S.i || x.item?.id !== item.id);
+      if (S.steps[S.i].type === 'type' && mine.trim()) {
+        app.store.update((s) => { s.accepted[item.id] = [...new Set([...(s.accepted[item.id] || []), mine.trim()])].slice(-5); });
+      }
+      app.toast(t('fb.overrideDone'));
+      next();
+    });
+    sheet.querySelector('#report').addEventListener('click', async () => {
+      const note = await app.ask({ title: t('report.title'), text: t('report.text'), placeholder: t('report.ph'), yes: t('report.send'), no: t('cancel') });
+      if (note === null) return;
+      const mine = Array.isArray(S.answer) ? S.answer.join(' ') : String(S.answer || '');
+      app.store.update((s) => { s.reports.push({ itemId: item.id, it: item.it, answer: mine.slice(0, 120), note: note.slice(0, 300), at: dayKey() }); });
+      app.toast(t('report.thanks'));
+    });
     setTimeout(() => sheet.querySelector('#sheet-next')?.focus(), 60);
     foot.parentElement.style.visibility = 'hidden';
     if (res.ok && app.speech.available && (S.steps[S.i].type === 'build' || S.steps[S.i].type === 'type')) app.play(item.it);
@@ -338,6 +484,7 @@ export function runSession(root, app, opts) {
   }
 
   function next() {
+    S.passiveCleanup?.(); S.passiveCleanup = null;
     foot.parentElement.style.visibility = '';
     S.i++; render();
   }
@@ -358,6 +505,7 @@ export function runSession(root, app, opts) {
   // ── end ───────────────────────────────────────────────────
   function finish() {
     tick();
+    if (opts.mode === 'lesson') clearResume();
     document.removeEventListener('keydown', onKey);
     const total = S.results.size;
     const ok = [...S.results.values()].filter(Boolean).length;
@@ -376,6 +524,7 @@ export function runSession(root, app, opts) {
       app.store.update((s) => {
         for (const [id, good] of S.results) s.srs[id] = schedule(s.srs[id] || newCard(today, good), good, today);
         app.store.bumpDay('reviews');
+        app.store.bumpDay('reviewed', S.results.size);
       });
       pushShare(app);
       title = t('end.reviewTitle');

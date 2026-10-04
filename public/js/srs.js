@@ -50,3 +50,18 @@ export function trickyIds(srs, n = 6) {
     .slice(0, n)
     .map(([id]) => id);
 }
+
+/**
+ * Today's review queue, capped so a backlog never becomes a wall.
+ * Cap grows with the daily goal (10 min → 20 cards, 15 → 30, 20 → 40).
+ * Whatever is over the cap simply waits for the next days, with no penalty.
+ */
+export const reviewCap = (goal = 15) => Math.max(15, goal * 2);
+
+export function todayReview(state, today = dayKey()) {
+  const due = dueIds(state.srs, today);
+  const done = state.days?.[today]?.reviewed || 0;
+  const cap = reviewCap(state.profile?.goal);
+  const left = Math.max(0, cap - done);
+  return { ids: due.slice(0, left), due: due.length, cap, done, left, backlog: due.length > cap };
+}

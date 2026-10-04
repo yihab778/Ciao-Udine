@@ -1,6 +1,7 @@
 import { unitsA } from './units-a.js';
 import { unitsB } from './units-b.js';
 import { unitsC } from './units-c.js';
+import { MISSIONS } from './missions.js';
 
 export const MILESTONES = [
   {
@@ -36,6 +37,7 @@ const toItem = (kind, lessonId, unitId, i) => (t) => ({
 export const LESSONS = [];
 export const ITEMS = new Map();
 for (const u of UNITS) {
+  u.mission = MISSIONS[u.id];
   u.lessons.forEach((l, idx) => {
     l.unitId = u.id;
     l.kind = l.kind || 'lesson';

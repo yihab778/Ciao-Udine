@@ -4,7 +4,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { speech } from './speech.js';
 import { personalize, esc } from './util.js';
 import { icons, logo } from './art.js';
-import { dueIds } from './srs.js';
+import { todayReview } from './srs.js';
 
 import { renderOnboarding } from './views/onboarding.js';
 import { renderToday } from './views/today.js';
@@ -16,6 +16,7 @@ import { renderSettings } from './views/settings.js';
 import { renderShare } from './views/share.js';
 import { renderPartnerLink, renderPartnerLive, renderPartnerDemo } from './views/partner.js';
 import { startLesson, startPractice } from './views/runner.js';
+import { renderPhrasebook } from './views/phrasebook.js';
 
 const root = document.getElementById('app');
 let deferredInstall = null;
@@ -30,6 +31,12 @@ export const app = {
   navigate(hash) { if (location.hash === hash) route(); else location.hash = hash; },
   rerender() { route(); },
   get canInstall() { return !!deferredInstall; },
+  /** iPhone/iPad Safari, not yet added to the home screen (storage can be evicted after 7 days). */
+  get iosNotInstalled() {
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+    return ios && !standalone;
+  },
   async install() { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; route(); },
 
   async play(text, btn) {
@@ -43,6 +50,42 @@ export const app = {
     btn?.classList.add('playing');
     await speech.speak(app.P(text), 0.6);
     btn?.classList.remove('playing');
+  },
+
+  /** Simple bottom sheet with arbitrary (already escaped) HTML. */
+  sheet({ title, html, close }) {
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="sh-t" style="max-height:85dvh;overflow:auto">
+      <div class="row"><h2 id="sh-t" class="spacer">${esc(title)}</h2><button class="icon-btn" data-x aria-label="${esc(close || t('close'))}">${icons.close(22)}</button></div>
+      <div style="margin-top:10px">${html}</div></div>`;
+    const done = () => { bg.remove(); document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') done(); };
+    bg.addEventListener('click', (e) => { if (e.target === bg || e.target.closest('[data-x]')) done(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(bg);
+    bg.querySelector('[data-x]').focus();
+    return { el: bg, close: done };
+  },
+
+  /** In-app text prompt (never a browser dialog). Resolves to the text, or null. */
+  ask({ title, text, placeholder = '', yes, no }) {
+    return new Promise((resolve) => {
+      const bg = document.createElement('div');
+      bg.className = 'modal-bg';
+      bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="ask-t">
+        <h2 id="ask-t">${esc(title)}</h2>${text ? `<p class="muted" style="margin-top:6px">${esc(text)}</p>` : ''}
+        <textarea class="input" dir="auto" style="height:96px;padding:12px;margin-top:12px;resize:none" maxlength="300" placeholder="${esc(placeholder)}"></textarea>
+        <div class="row"><button class="btn secondary block" data-r="0">${esc(no)}</button><button class="btn block" data-r="1">${esc(yes)}</button></div></div>`;
+      const ta = bg.querySelector('textarea');
+      const done = (v) => { bg.remove(); resolve(v); };
+      bg.addEventListener('click', (e) => {
+        if (e.target === bg) return done(null);
+        const b = e.target.closest('[data-r]'); if (b) done(b.dataset.r === '1' ? ta.value.trim() : null);
+      });
+      document.body.appendChild(bg);
+      ta.focus();
+    });
   },
 
   toast(msg, ms = 2400) {
@@ -75,6 +118,7 @@ export const app = {
 };
 
 function applyLang(lang) {
+  document.documentElement.style.setProperty('--scale', store.state.profile.textScale === 'large' ? '1.12' : '1');
   setLang(lang);
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -89,7 +133,7 @@ const TABS = [
 ];
 
 function shell(active, inner) {
-  const due = dueIds(store.state.srs).length;
+  const due = todayReview(store.state).ids.length;
   const banners = [];
   if (store.error) banners.push(`<div class="banner warn" role="alert">${esc(t('err.save'))}</div>`);
   if (!navigator.onLine) banners.push(`<div class="banner info">${esc(t('offline'))}</div>`);
@@ -97,6 +141,7 @@ function shell(active, inner) {
   <header class="topbar">
     <a class="brand" href="#/today" aria-label="${esc(APP.name)}">${logo(34)}<b dir="ltr">${esc(APP.name)}</b></a>
     <span class="spacer"></span>
+    <a class="icon-btn" href="#/phrasebook" aria-label="${esc(t('pb.title'))}" title="${esc(t('pb.title'))}">${icons.lifebuoy(22)}</a>
     <a class="icon-btn" href="#/share" aria-label="${esc(t('partner'))}" title="${esc(t('partner'))}">${icons.heart(22)}</a>
     <a class="icon-btn" href="#/settings" aria-label="${esc(t('settings'))}" title="${esc(t('settings'))}">${icons.settings(22)}</a>
   </header>
@@ -137,6 +182,7 @@ function route() {
       case 'progress': return mountTab('progress', renderProgress);
       case 'settings': return mountTab('', renderSettings);
       case 'share': return mountTab('', renderShare);
+      case 'phrasebook': return mountTab('', renderPhrasebook);
       case 'lesson': return startLesson(root, app, b);
       case 'practice': return startPractice(root, app, b);
       default:

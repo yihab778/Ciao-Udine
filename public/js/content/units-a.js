@@ -54,6 +54,50 @@ export const unitsA = [
         ],
       },
       {
+        id: 'u1l5', title: { it: 'Pasta o basta?', fr: 'Sons difficiles', ar: 'أصوات صعبة' },
+        goal: { fr: 'Entendre et dire p / b, v / f et les consonnes doubles.', ar: 'أسمع وأقول p / b و v / f والحروف المتشددة.' },
+        note: {
+          fr: [
+            'Quelques sons changent complètement le sens d’un mot. Entraîne ton oreille avant de parler !',
+            '*p* et *b* : *pasta* (les pâtes) ≠ *basta* (ça suffit). *v* et *f* : *vino* (le vin) ≠ *fino* (jusqu’à).',
+            'Les consonnes doubles : *sete* (la soif) ≠ *sette* (sept), *pena* (la peine) ≠ *penna* (le stylo), *caro* (cher) ≠ *carro* (le chariot).',
+            'Astuce : pour une consonne double, fais une toute petite pause avant de la prononcer : *set-te*, *pen-na*.',
+          ],
+          ar: [
+            'فيه أصوات بتغيّر معنى الكلمة خالص. درّبي ودنك الأول قبل ما تتكلمي!',
+            '*p* و *b*: *pasta* (المكرونة) غير *basta* (كفاية). العربي مفيهوش «پ»، فخدي بالك: الشفايف تتقفل والصوت من غير ما الزور يهتز. و *v* غير *f*: *vino* (نبيت) غير *fino* (لحد).',
+            'الحروف المتشددة زي الشدة بالظبط: *sete* (العطش) غير *sette* (سبعة)، *pena* غير *penna* (القلم).',
+            'نصيحة: قبل الحرف المتشدد اعملي وقفة صغيرة جداً: *set-te*، *pen-na*.',
+          ],
+        },
+        compare: {
+          fr: 'En français, les doubles ne s’entendent presque jamais (« pomme »). En italien, elles s’entendent toujours.',
+          ar: 'الشدة في العربي هي نفس فكرة الحرف المتشدد في الإيطالي — دي ميزة عندك!',
+        },
+        pairs: [['la pasta', 'basta'], ['le pere', 'bere'], ['il vino', 'fino a'], ['la sete', 'sette'], ['la pena', 'la penna'], ['caro', 'il carro']],
+        words: [
+          ['la pasta', 'les pâtes', 'المكرونة', 'PA-sta'],
+          ['basta', 'ça suffit', 'كفاية', 'BA-sta'],
+          ['le pere', 'les poires', 'الكمترى', 'PÉ-ré'],
+          ['bere', 'boire', 'يشرب', 'BÉ-ré'],
+          ['il vino', 'le vin', 'النبيت', 'VI-no'],
+          ['fino a', 'jusqu’à', 'لحد', 'FI-no'],
+          ['la sete', 'la soif', 'العطش', 'SÉ-té'],
+          ['sette', 'sept', 'سبعة', 'SÉT-té'],
+          ['la pena', 'la peine', 'الأسى', 'PÉ-na'],
+          ['la penna', 'le stylo', 'القلم', 'PÉN-na'],
+          ['caro', 'cher', 'غالي', 'KA-ro'],
+          ['il carro', 'le chariot', 'العربية الكارو', 'KAR-ro'],
+        ],
+        phrases: [
+          ['Ho sete: vorrei bere un po’ d’acqua.', 'J’ai soif : je voudrais boire un peu d’eau.', 'أنا عطشانة: عايزة أشرب شوية مية.'],
+          ['Sono le sette.', 'Il est sept heures.', 'الساعة سبعة.'],
+          ['Mi presti una penna?', 'Tu me prêtes un stylo ?', 'ممكن تسلّفني قلم؟'],
+          ['Le pere sono buonissime.', 'Les poires sont délicieuses.', 'الكمترى حلوة أوي.'],
+          ['Basta, grazie!', 'Ça suffit, merci !', 'كفاية، شكراً!'],
+        ],
+      },
+      {
         id: 'u1l2', title: { it: 'Buongiorno!', fr: 'Saluer et remercier', ar: 'السلام والشكر' },
         goal: { fr: 'Saluer n’importe qui, à toute heure, et dire merci.', ar: 'أسلّم على أي حد في أي وقت وأقول شكراً.' },
         note: {
@@ -334,6 +378,45 @@ export const unitsA = [
           ['Ecco il resto.', 'Voici votre monnaie.', 'اتفضلي الباقي.'],
           ['Sono quindici euro.', 'Ça fait quinze euros.', 'خمستاشر يورو.'],
           ['Vuole lo scontrino?', 'Vous voulez le ticket ?', 'عايزة الإيصال؟'],
+        ],
+      },
+      {
+        id: 'u2l4', title: { it: 'Falsi amici', fr: 'Attention, faux amis !', ar: 'كلمات خدّاعة' },
+        goal: { fr: 'Éviter les pièges des mots qui ressemblent au français.', ar: 'أتجنّب الكلمات اللي شبه الفرنساوي بس معناها مختلف.' },
+        note: {
+          fr: [
+            'Ton français t’aide énormément… sauf avec les « faux amis » : des mots qui se ressemblent mais ne veulent pas dire la même chose.',
+            '*la camera* = la chambre (une caméra se dit *la telecamera*). *il burro* = le beurre (un bureau se dit *l’ufficio*). *salire* = monter. *guardare* = regarder. *la firma* = la signature.',
+            'Et le genre change parfois : *il mare* (la mer), *il fiore* (la fleur), *il dente* (la dent) sont masculins en italien !',
+          ],
+          ar: [
+            'الفرنساوي بتاعك بيساعدك جداً… ما عدا مع «الأصحاب الكدابين»: كلمات شبه بعض بس معناها مختلف.',
+            '*la camera* = الأوضة (مش كاميرا). *il burro* = الزبدة (مش مكتب). *salire* = يطلع. *guardare* = يتفرج / يبص. *la firma* = الإمضا.',
+            'وساعات النوع بيتغير: *il mare* (البحر)، *il fiore* (الوردة)، *il dente* (السنّة) مذكر في الإيطالي، ومؤنث في الفرنساوي.',
+          ],
+        },
+        compare: {
+          fr: 'Règle d’or : si un mot ressemble trop au français, vérifie-le une fois. Ce réflexe t’évitera beaucoup de malentendus.',
+          ar: 'القاعدة الذهبية: لو الكلمة شبه الفرنساوي أوي، اتأكدي منها مرة. ده هيوفّر عليكي سوء فهم كتير.',
+        },
+        words: [
+          ['la camera', 'la chambre (pas une caméra !)', 'الأوضة'],
+          ['il burro', 'le beurre (pas un bureau !)', 'الزبدة'],
+          ['salire', 'monter (pas salir !)', 'يطلع'],
+          ['guardare', 'regarder (pas garder !)', 'يتفرج / يبص'],
+          ['la firma', 'la signature (pas une firme !)', 'الإمضا'],
+          ['la cantina', 'la cave (pas la cantine !)', 'البدروم'],
+          ['l’ufficio', 'le bureau', 'المكتب'],
+          ['il mare', 'la mer (masculin !)', 'البحر'],
+          ['il fiore', 'la fleur (masculin !)', 'الوردة'],
+          ['il dente', 'la dent (masculin !)', 'السنّة'],
+        ],
+        phrases: [
+          ['La mia camera è piccola.', 'Ma chambre est petite.', 'أوضتي صغيرة.'],
+          ['Vorrei pane e burro.', 'Je voudrais du pain et du beurre.', 'عايزة عيش وزبدة.'],
+          ['Saliamo al terzo piano.', 'Montons au troisième étage.', 'يلا نطلع الدور التالت.'],
+          ['Guardo il mare.', 'Je regarde la mer.', 'باتفرج على البحر.'],
+          ['Che bel fiore!', 'Quelle belle fleur !', 'إيه الوردة الحلوة دي!'],
         ],
       },
       {

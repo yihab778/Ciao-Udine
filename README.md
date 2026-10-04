@@ -3,7 +3,7 @@
 A warm, mobile-first Italian course for a French- and Egyptian-Arabic-speaking beginner who is moving to Udine in about a year. Every lesson prepares her for a real situation she'll meet there: the neighbour on the stairs, the café in Piazza della Libertà, the train to Trieste, the landlord, the pharmacy, the town hall, dinner with friends.
 
 - **12 stages over 12 months**, grouped into 4 milestones (A1− → towards A2). The plan spreads itself up to her move date and adjusts gently if she goes slower. There is no streak pressure.
-- **49 sessions**: 37 short lessons and 12 interactive dialogue scenes, with about 600 words and phrases in Italian, French and Egyptian Arabic.
+- **51 sessions**: 39 short lessons and 12 interactive dialogue scenes, with about 630 words and phrases in Italian, French and Egyptian Arabic, plus a survival phrasebook.
 - **Varied practice**: discovery with audio, multiple choice, listening, matching, sentence building and typed recall. Wrong answers come back at the end of the lesson.
 - **Friendly corrections** that explain the specific slip: accents (*è* vs *e*), missing article, double consonants, the silent *h* in *ho*, French-speaker spellings like *ou → u*, word order and missing words.
 - **Spaced repetition**: a review queue that brings words back just as they start to fade.
@@ -11,6 +11,18 @@ A warm, mobile-first Italian course for a French- and Egyptian-Arabic-speaking b
 - **French or Egyptian Arabic support**, with full right-to-left layout. Italian always stays left-to-right, even inside Arabic text.
 - **Partner view**: a calm summary she chooses to share, with no answers, location or timestamps.
 - **Works offline** and can be installed as a PWA.
+
+## Built from what users dislike in other apps
+
+[`docs/user-research.md`](docs/user-research.md) collects the most common complaints about Duolingo, Babbel, Busuu, Memrise, Anki and others, and maps each one to a fix:
+
+- **No guilt:** no streaks, energy or ads; a warm *Bentornata* after a break; an optional calendar reminder at the time she chooses.
+- **No review piles:** a daily review cap (her daily goal × 2), and the backlog waits without penalty. The app suggests "review first" when the pile is big.
+- **Fair grading:** accents, articles, typos and optional subject pronouns are accepted. An **"I was right"** button lets her overrule the app, and a **Report** button flags any doubtful sentence for her partner.
+- **Speaking:** private shadowing in every lesson (listen → record → compare); the recording stays on the phone. There's a "natural speed" voice and the best available Italian voices.
+- **Real life:** a **survival phrasebook** from day 1 with a big "show this to the person" mode, and a **real-life mission** for each stage.
+- **Her languages:** a *Sons difficiles* lesson with minimal pairs (p/b, v/f, double consonants) and a *Faux amis* lesson for French speakers.
+- **Trust:** interrupted lessons resume where she left them; an iPhone "add to home screen" warning (Safari can wipe a website's data after 7 days without use); backups shared in one tap.
 
 ## Start it
 
