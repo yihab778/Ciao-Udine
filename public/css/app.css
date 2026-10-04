@@ -467,3 +467,6 @@ html[dir="rtl"] .search input { padding: 0 46px 0 16px; }
 .show-big .small { font-size: 1.1rem; color: var(--ink-soft); }
 .show-big .close { position: absolute; top: 14px; inset-inline-end: 14px; }
 .word-list .ex { display: block; margin-top: 2px; font-size: .85rem; }
+.wa-btn svg { color: var(--sage); }
+.btn.block.wa-btn:not(.secondary) svg { color: currentColor; }
+.end .wa-btn { margin-top: 4px; }

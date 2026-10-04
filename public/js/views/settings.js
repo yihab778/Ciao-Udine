@@ -2,6 +2,7 @@ import { APP, DAILY_GOALS } from '../config.js';
 import { esc, itx, dayKey } from '../util.js';
 import { icons } from '../art.js';
 import { fmtMonth } from '../i18n.js';
+import { cleanNumber } from '../whatsapp.js';
 
 /** Back up progress: share the file (WhatsApp, e-mail, Drive…) when possible, else download it. */
 export async function backupFile(app) {
@@ -57,6 +58,9 @@ export function renderSettings(main, app) {
     <section class="card settings-group" style="margin-top:14px">
       <div class="field"><label for="s-name">${esc(t('set.name'))}</label><input class="input" id="s-name" maxlength="30" value="${esc(p.name)}"></div>
       <div class="field"><label for="s-partner">${esc(t('set.partner'))}</label><input class="input" id="s-partner" maxlength="30" value="${esc(p.partnerName)}"></div>
+      <div class="field"><label for="s-wa">${esc(t('wa.number', { p: p.partnerName || 'Youssef' }))}</label>
+        <input class="input" id="s-wa" type="tel" inputmode="tel" autocomplete="off" dir="ltr" placeholder="+39 333 123 4567" value="${esc(p.partnerWa ? '+' + p.partnerWa : '')}">
+        <span class="faint">${esc(t('wa.numberHint'))}</span></div>
       <div class="field"><span class="lbl">${esc(t('set.lang'))}</span>
         <div class="seg" role="group"><button data-lang="fr" aria-pressed="${p.lang === 'fr'}">Français</button><button data-lang="ar" aria-pressed="${p.lang === 'ar'}" lang="ar">العربي المصري</button></div></div>
       <div class="field"><span class="lbl">${esc(t('set.goal'))}</span>
@@ -118,6 +122,11 @@ export function renderSettings(main, app) {
 
   main.querySelector('#s-name').addEventListener('change', (e) => save((pr) => { pr.name = e.target.value.trim(); }));
   main.querySelector('#s-partner').addEventListener('change', (e) => save((pr) => { pr.partnerName = e.target.value.trim(); }));
+  main.querySelector('#s-wa').addEventListener('change', (e) => {
+    const n = cleanNumber(e.target.value);
+    if (e.target.value.trim() && !n) { app.toast(t('wa.numberBad'), 3500); return; }
+    save((pr) => { pr.partnerWa = n; });
+  });
   main.querySelector('#s-move').addEventListener('change', (e) => { if (e.target.value) save((pr) => { pr.moveDate = e.target.value; }, true); });
   main.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => save((pr) => { pr.lang = b.dataset.lang; }, true)));
   main.querySelectorAll('[data-goal]').forEach((b) => b.addEventListener('click', () => save((pr) => { pr.goal = Number(b.dataset.goal); }, true)));

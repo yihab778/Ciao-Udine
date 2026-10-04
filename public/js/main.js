@@ -3,6 +3,7 @@ import { store, requestPersistence } from './store.js';
 import { t, setLang, getLang } from './i18n.js';
 import { speech } from './speech.js';
 import { personalize, esc } from './util.js';
+import { waLink, parseInvite } from './whatsapp.js';
 import { icons, logo } from './art.js';
 import { todayReview } from './srs.js';
 
@@ -28,6 +29,13 @@ export const app = {
   get lang() { return getLang(); },
   get profile() { return store.state.profile; },
   P: (text) => personalize(text, store.state.profile),
+  get partner() { return store.state.profile.partnerName?.trim() || 'Youssef'; },
+  /** wa.me link to the partner with a ready-made message. */
+  wa(text) { return waLink(store.state.profile.partnerWa, text); },
+  /** Small reusable WhatsApp button (an <a>, so it works inside installed PWAs too). */
+  waButton(text, label, cls = 'btn secondary small') {
+    return `<a class="${cls} wa-btn" href="${esc(waLink(store.state.profile.partnerWa, text))}" target="_blank" rel="noopener">${icons.chat(18)} ${esc(label)}</a>`;
+  },
   navigate(hash) { if (location.hash === hash) route(); else location.hash = hash; },
   rerender() { route(); },
   get canInstall() { return !!deferredInstall; },
@@ -160,6 +168,13 @@ function mountTab(active, renderFn) {
 
 function route() {
   const hash = location.hash || '#/';
+  // Invite link from the partner: #/invite?name=Youssef&wa=39333… (stored only on her phone)
+  if (hash.startsWith('#/invite')) {
+    const inv = parseInvite(hash.split('?')[1]);
+    if (inv) store.update((s) => { if (inv.name) s.profile.partnerName = inv.name; if (inv.wa) s.profile.partnerWa = inv.wa; });
+    app.toast(t('wa.inviteOk', { p: app.partner }), 3500);
+    return app.navigate(store.state.profile.onboarded ? '#/today' : '#/welcome');
+  }
   const [, a = '', b = ''] = hash.split('/');
   speech.stop();
   applyLang(store.state.profile.lang);

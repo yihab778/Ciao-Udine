@@ -2,6 +2,7 @@ import { APP, DAILY_GOALS } from '../config.js';
 import { esc, dayKey } from '../util.js';
 import { skyline, logo, icons } from '../art.js';
 import { setLang, fmtMonth } from '../i18n.js';
+import { cleanNumber } from '../whatsapp.js';
 
 let ob = null;
 const STEPS = 5;
@@ -35,7 +36,10 @@ export function renderOnboarding(root, app) {
       <div class="field"><input class="input" id="ob-name" autocomplete="given-name" maxlength="30" placeholder="${esc(t('ob.namePh'))}" value="${esc(d.name)}"></div>
       <p class="faint">${esc(t('ob.nameHint'))}</p>
       <h2 style="margin-top:12px">${esc(t('ob.partner'))}</h2>
-      <div class="field"><input class="input" id="ob-partner" maxlength="30" value="${esc(d.partnerName)}"></div>`;
+      <div class="field"><input class="input" id="ob-partner" maxlength="30" value="${esc(d.partnerName)}"></div>
+      <div class="field"><label for="ob-wa" class="lbl">${esc(t('wa.number', { p: d.partnerName || 'Youssef' }))} <span class="faint">(${esc(t('wa.optional'))})</span></label>
+        <input class="input" id="ob-wa" type="tel" inputmode="tel" dir="ltr" placeholder="+39 333 123 4567" value="${esc(d.partnerWa ? '+' + d.partnerWa : '')}">
+        <span class="faint">${esc(t('wa.numberHint'))}</span></div>`;
   } else if (ob.step === 2) {
     const min = dayKey().slice(0, 7);
     body = `
@@ -74,6 +78,7 @@ export function renderOnboarding(root, app) {
   const sync = () => {
     const n = root.querySelector('#ob-name'); if (n) d.name = n.value.trim();
     const p = root.querySelector('#ob-partner'); if (p) d.partnerName = p.value.trim();
+    const w = root.querySelector('#ob-wa'); if (w) d.partnerWa = cleanNumber(w.value);
     const m = root.querySelector('#ob-move'); if (m && m.value) d.moveDate = m.value;
   };
 

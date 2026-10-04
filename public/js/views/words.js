@@ -4,6 +4,7 @@ import { icons } from '../art.js';
 import { num } from '../i18n.js';
 import { strength } from '../srs.js';
 import { stripAccents, stripArticle, normalize } from '../grade.js';
+import { messages } from '../whatsapp.js';
 
 /** Find a phrase from the same lesson that uses this word, to show it in context. */
 function exampleFor(item) {
@@ -34,7 +35,8 @@ export function renderWords(main, app) {
   const labels = t('words.strength');
 
   main.innerHTML = `<h1 style="margin-top:8px">${esc(t('words.title'))}</h1>
-    <p class="faint">${esc(t('words.count', { n: num(items.length) }))}</p>
+    <div class="row" style="justify-content:space-between"><p class="faint">${esc(t('words.count', { n: num(items.length) }))}</p>
+      ${app.waButton(messages.free(app.partner), t('wa.ask', { p: app.partner }), 'btn ghost small')}</div>
     <div class="search">${icons.search(22)}<input type="search" id="q" placeholder="${esc(t('words.search'))}" aria-label="${esc(t('words.search'))}" value="${esc(query)}"></div>
     <div class="filters" role="group">
       <button data-f="all" aria-pressed="${filter === 'all'}">${esc(t('words.all'))}</button>

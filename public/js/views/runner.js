@@ -9,6 +9,7 @@ import { newCard, schedule } from '../srs.js';
 import { unitProgress } from '../plan.js';
 import { buildSummary, live } from '../share.js';
 import { runScene } from './scene.js';
+import { messages } from '../whatsapp.js';
 
 // ── Interrupted lessons resume where she left them (a phone call shouldn't cost a lesson)
 const RESUME_KEY = `${APP.storageKey}:resume`;
@@ -447,6 +448,7 @@ export function runSession(root, app, opts) {
       <button class="btn block ${res.ok ? 'good' : 'bad'}" id="sheet-next">${esc(t('continue'))} ${icons.arrow(18)}</button>
       <div class="row" style="justify-content:center;margin-top:6px">
         ${!res.ok && ['type', 'build', 'listenBuild'].includes(S.steps[S.i].type) ? `<button class="btn ghost small" id="override">${icons.check(16)} ${esc(t('fb.override'))}</button>` : ''}
+        ${app.waButton(messages.question(app.partner, P(item.it), item.fr, Array.isArray(S.answer) ? S.answer.join(' ') : (S.steps[S.i].type === 'type' ? S.answer : '')), t('wa.ask', { p: app.partner }), 'btn ghost small')}
         <button class="btn ghost small" id="report">${icons.flag(16)} ${esc(t('fb.report'))}</button>
       </div>`;
     sheet.querySelector('#sheet-next').addEventListener('click', next);
@@ -510,7 +512,7 @@ export function runSession(root, app, opts) {
     const total = S.results.size;
     const ok = [...S.results.values()].filter(Boolean).length;
     const mins = Math.max(1, Math.round((Date.now() - S.start) / 60000));
-    let extra = '', title, canNow = '', added = 0;
+    let extra = '', title, canNow = '', added = 0, waMsg = null;
 
     if (opts.mode === 'lesson') {
       const info = finishLesson(app, opts.lesson, S.results, { ok, total });
@@ -519,6 +521,7 @@ export function runSession(root, app, opts) {
       canNow = `<div class="card tint-sage" style="text-align:start;margin-top:18px"><div class="eyebrow">${esc(t('end.canNow'))}</div><p style="font-weight:700;margin-top:4px">${esc(P(tr(opts.lesson.goal, lang)))}</p></div>`;
       if (info.unitNowDone) extra += `<div class="card tint-gold" style="margin-top:12px;text-align:start"><b>${esc(t('end.unitDone', { u: tr(info.unit.title, lang) }))}</b><p style="margin-top:4px">${esc(P(tr(info.unit.canDo, lang)))}</p></div>`;
       if (info.milestone) extra += `<div class="card tint-rose" style="margin-top:12px"><b>${esc(t('end.milestone', { m: tr(info.milestone.title, lang) }))}</b></div>`;
+      waMsg = info.milestone ? messages.milestone(app.partner, info.milestone) : info.unitNowDone ? messages.unit(app.partner, info.unit) : messages.lesson(app.partner, opts.lesson);
     } else {
       const today = dayKey();
       app.store.update((s) => {
@@ -542,6 +545,7 @@ export function runSession(root, app, opts) {
           <div>${icons.today(22)} ${esc(t('end.time', { n: num(mins) }))}</div>
           ${added ? `<div>${icons.review(22)} ${esc(t('end.words', { n: num(added) }))}</div>` : ''}
         </div>
+        ${waMsg ? app.waButton(waMsg, t('wa.celebrate', { p: app.partner }), 'btn secondary block') : ''}
       </main>
       <div class="run-foot"><a class="btn block" href="#/today">${esc(t('continue'))} ${icons.arrow(18)}</a></div>`;
   }

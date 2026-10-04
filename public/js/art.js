@@ -27,6 +27,7 @@ export const icons = {
   shield: (s) => S('<path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>', s),
   download: (s) => S('<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>', s),
   upload: (s) => S('<path d="M12 21V9M7 14l5-5 5 5M4 3h16"/>', s),
+  chat: (s) => S('<path d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.6-4.3A8.5 8.5 0 1 1 20.5 11.5z"/><path d="M8.5 9.5c.3 2.8 3.2 5.6 6 6l1.3-1.4-2-1.2-.9.8a4.6 4.6 0 0 1-2.6-2.6l.8-.9-1.2-2z"/>', s),
   lifebuoy: (s) => S('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>', s),
   mic: (s) => S('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>', s),
   stop: (s) => S('<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', s),

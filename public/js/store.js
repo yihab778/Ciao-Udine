@@ -10,6 +10,7 @@ export function freshState() {
     profile: {
       name: '',
       partnerName: 'Youssef',
+      partnerWa: '',          // partner's WhatsApp number, kept only on this phone
       lang: 'fr',            // support language: 'fr' | 'ar'
       goal: 15,              // minutes per day
       moveDate: defaultMoveDate(),

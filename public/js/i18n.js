@@ -165,6 +165,15 @@ const S = {
     'remind.hint': 'Un événement quotidien à l’heure choisie. Tu le supprimes quand tu veux, sans culpabilité.',
     'remind.event': 'Ciao, Udine! — 10 minutes d’italien',
     'pv.missions': '{n} missions réalisées dans la vraie vie',
+    'wa.number': 'Numéro WhatsApp de {p}',
+    'wa.optional': 'facultatif',
+    'wa.numberHint': 'Avec l’indicatif du pays (ex. +39 pour l’Italie). Il reste uniquement sur ce téléphone.',
+    'wa.numberBad': 'Ce numéro ne semble pas valide. Ajoute l’indicatif, ex. +39 333 123 4567.',
+    'wa.celebrate': 'Le dire à {p} sur WhatsApp',
+    'wa.ask': 'Demander à {p}',
+    'wa.tell': 'Le dire à {p}',
+    'wa.sendProgress': 'Envoyer mes progrès à {p} sur WhatsApp',
+    'wa.inviteOk': 'Contact de {p} ajouté ✓',
   },
 
   ar: {
@@ -332,6 +341,15 @@ const S = {
     'remind.hint': 'حدث يومي في الساعة اللي تختاريها. تمسحيه وقت ما تحبي، من غير أي تأنيب.',
     'remind.event': 'Ciao, Udine! — ١٠ دقايق إيطالي',
     'pv.missions': '{n} مهمة اتعملت في الحياة الحقيقية',
+    'wa.number': 'رقم واتساب {p}',
+    'wa.optional': 'اختياري',
+    'wa.numberHint': 'بكود البلد (مثلاً +39 لإيطاليا). الرقم بيفضل على الموبايل ده بس.',
+    'wa.numberBad': 'الرقم ده شكله مش صح. ضيفي كود البلد، مثلاً +39 333 123 4567.',
+    'wa.celebrate': 'قولي لـ{p} على واتساب',
+    'wa.ask': 'اسألي {p}',
+    'wa.tell': 'قولي لـ{p}',
+    'wa.sendProgress': 'ابعتي تقدّمك لـ{p} على واتساب',
+    'wa.inviteOk': 'اتضاف رقم {p} ✓',
   },
 };
 

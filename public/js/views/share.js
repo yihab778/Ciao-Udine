@@ -4,6 +4,7 @@ import { icons } from '../art.js';
 import { buildSummary, linkFor, live } from '../share.js';
 import { partnerDashboard } from './partner.js';
 import { fmtDate } from '../i18n.js';
+import { messages } from '../whatsapp.js';
 
 export function renderShare(main, app) {
   const { t, store, lang } = app;
@@ -63,6 +64,7 @@ export function renderShare(main, app) {
         <p style="font-weight:700">${esc(t('share.liveOn', { p: partner }))}</p>
         <div class="field" style="margin-top:10px"><span class="lbl">${esc(t('share.liveLink', { p: partner }))}</span>
         <div class="linkbox"><input readonly value="${esc(link)}" aria-label="link"><button class="btn small" id="cp">${icons.copy(18)}</button></div></div>
+        <div style="margin-top:12px">${app.waButton(messages.progress(app.partner, link), t('wa.sendProgress', { p: partner }), 'btn block')}</div>
         <div class="row wrap" style="margin-top:12px"><button class="btn secondary small" id="push">${icons.review(18)} ${esc(t('share.send'))}</button>
         <span class="faint">${sh.lastSharedAt ? `${esc(t('share.updated'))} · ${esc(fmtDate(sh.lastSharedAt, lang))}` : ''}</span></div>
       </section>`;
@@ -75,7 +77,8 @@ export function renderShare(main, app) {
     }
     const link = linkFor(buildSummary(store.state));
     box.innerHTML = `<section class="card tint-blue" style="margin-top:14px">
-      <button class="btn block" id="send">${icons.share(20)} ${esc(t('share.send'))}</button>
+      ${app.waButton(messages.progress(app.partner, link), t('wa.sendProgress', { p: partner }), 'btn block')}
+      <button class="btn secondary block" id="send" style="margin-top:8px">${icons.share(20)} ${esc(t('share.send'))}</button>
       <div class="linkbox"><input readonly value="${esc(link)}" aria-label="link"><button class="btn small secondary" id="cp">${icons.copy(18)}</button></div>
       <p class="faint" style="margin-top:10px">${esc(t('share.linkNote', { p: partner }))}</p>
       ${hasServer ? `<button class="btn ghost small" id="golive">${esc(t('share.liveEnable'))}</button>` : `<p class="faint" style="margin-top:6px">${esc(t('share.liveOff'))}</p>`}

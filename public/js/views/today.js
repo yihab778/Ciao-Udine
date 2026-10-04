@@ -1,6 +1,7 @@
 import { LESSONS, ITEMS, UNITS, unitById, nextLesson } from '../content/index.js';
 import { getResume } from './runner.js';
 import { backupFile } from './settings.js';
+import { messages } from '../whatsapp.js';
 import { esc, itx, sup, tr, meaning, dayKey, addDays, daysBetween } from '../util.js';
 import { skyline, ring, icons } from '../art.js';
 import { num, fmtDate } from '../i18n.js';
@@ -108,6 +109,7 @@ export function renderToday(main, app) {
         <div class="ring-wrap">${ring(goalPct, 72, 8)}<span>${num(minutes)}</span></div>
         <div>
           <div style="font-weight:800">${esc(goalPct >= 1 ? t('today.goalDone') : t('today.goal', { m: num(minutes), g: num(p.goal) }))}</div>
+          ${goalPct >= 1 ? `<div style="margin-top:6px">${app.waButton(messages.goal(app.partner, minutes), t('wa.tell', { p: app.partner }), 'btn ghost small')}</div>` : ''}
           <div class="faint">${esc(fmtDate(today, lang, { weekday: 'long', day: 'numeric', month: 'long' }))}</div>
         </div>
       </section>

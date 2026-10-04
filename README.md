@@ -24,6 +24,25 @@ A warm, mobile-first Italian course for a French- and Egyptian-Arabic-speaking b
 - **Her languages:** a *Sons difficiles* lesson with minimal pairs (p/b, v/f, double consonants) and a *Faux amis* lesson for French speakers.
 - **Trust:** interrupted lessons resume where she left them; an iPhone "add to home screen" warning (Safari can wipe a website's data after 7 days without use); backups shared in one tap.
 
+## WhatsApp with her partner
+
+She can contact her partner from the app in one tap, using official `wa.me` links. There's no API, no server and no key; WhatsApp opens with the message already written, and she only presses *Send*:
+
+- **Celebrate** at the end of every lesson or scene, with a stronger message for a completed stage or milestone.
+- **Ask a question** from any correction ("Demander à…"), with the word and her answer filled in, or from the word list.
+- **Share her progress** from the ♡ page.
+- **Tell him** when she reaches her daily goal.
+
+Messages are written in simple Italian, so each one is a little practice.
+
+**The partner's number is never in the code** (the repository is public). She can type it in during onboarding or in Settings, or the partner can send her an **invite link**:
+
+```
+https://yihab778.github.io/Ciao-Udine/#/invite?name=Youssef&wa=%2B39XXXXXXXXXX
+```
+
+(`%2B` is the `+`; put the full number with country code.) Opening the link saves the name and number on her phone only.
+
 ## Start it
 
 Requirements: [Node.js](https://nodejs.org) 18 or newer. There are no packages to install.

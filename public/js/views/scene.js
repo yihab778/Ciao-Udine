@@ -4,6 +4,7 @@ import { unitById } from '../content/index.js';
 import { esc, itx, sup, rich, tr, shuffle } from '../util.js';
 import { icons, confetti } from '../art.js';
 import { num } from '../i18n.js';
+import { messages } from '../whatsapp.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -151,6 +152,7 @@ export function runScene(root, app, lesson, { onDone }) {
             <div>${icons.check(22)} ${esc(t('end.firstTry', { a: num(firstTry), b: num(lesson.turns.length) }))}</div>
             <div>${icons.today(22)} ${esc(t('end.time', { n: num(mins) }))}</div>
           </div>
+          ${app.waButton(info?.milestone ? messages.milestone(app.partner, info.milestone) : info?.unitNowDone ? messages.unit(app.partner, info.unit) : messages.lesson(app.partner, lesson), t('wa.celebrate', { p: app.partner }), 'btn secondary block')}
         </main>
         <div class="run-foot"><a class="btn block" href="#/today">${esc(t('continue'))} ${icons.arrow(18)}</a></div>`;
     });
