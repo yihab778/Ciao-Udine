@@ -1,9 +1,11 @@
-import { LESSONS, ITEMS, unitById, nextLesson } from '../content/index.js';
+import { LESSONS, ITEMS, UNITS, unitById, nextLesson } from '../content/index.js';
+import { getResume } from './runner.js';
+import { backupFile } from './settings.js';
 import { esc, itx, sup, tr, meaning, dayKey, addDays, daysBetween } from '../util.js';
 import { skyline, ring, icons } from '../art.js';
 import { num, fmtDate } from '../i18n.js';
-import { dueIds } from '../srs.js';
-import { planInfo } from '../plan.js';
+import { todayReview } from '../srs.js';
+import { planInfo, unitProgress } from '../plan.js';
 import { live } from '../share.js';
 
 export function renderToday(main, app) {
@@ -24,7 +26,27 @@ export function renderToday(main, app) {
   else countdown = t('today.countdown', { n: num(plan.daysLeft) });
 
   const next = nextLesson(s.lessons);
-  const due = dueIds(s.srs).length;
+  const rv = todayReview(s, today);
+  const due = rv.ids.length;
+  const resume = getResume();
+
+  // Welcome back after a break: warm, never guilt.
+  const activeDays = Object.keys(s.days).filter((k) => k < today && (s.days[k].sec > 0 || s.days[k].lessons > 0)).sort();
+  const lastActive = activeDays[activeDays.length - 1];
+  const gap = lastActive ? daysBetween(lastActive, today) : 0;
+  const welcomeBack = gap >= 4 && !(s.days[today]?.sec > 0);
+
+  // Big review pile → suggest reviewing first (never blocks the lesson)
+  const reviewFirst = due >= 20;
+
+  // Real-life mission for the current stage (once she has started it)
+  const latestUnit = [...UNITS].reverse().find((u) => unitProgress(s, u).done > 0);
+  const mission = latestUnit && !s.missions[latestUnit.id] ? latestUnit : null;
+
+  // Data safety: iPhone Safari can wipe website storage after 7 days unless installed
+  const iosTip = app.iosNotInstalled && !s.dismissed.ios;
+  const lessonsDone = Object.keys(s.lessons).length;
+  const backupDue = lessonsDone >= 3 && (!s.lastBackupAt || daysBetween(s.lastBackupAt, today) >= 30) && !(s.dismissed.backup && daysBetween(s.dismissed.backup, today) < 14);
 
   // Phrase of the day: from learned phrases if any, else from the next lesson
   const learnedPhrases = Object.keys(s.srs).map((id) => ITEMS.get(id)).filter((i) => i && i.kind === 'p');
@@ -46,6 +68,7 @@ export function renderToday(main, app) {
     const u = unitById(next.unitId);
     const isScene = next.kind === 'scene';
     const mins = isScene ? 5 : Math.max(6, Math.round(next.items.length * 0.6));
+    const resuming = resume && resume.lessonId === next.id;
     nextCard = `
     <section class="card lesson-card" aria-labelledby="next-t">
       <span class="unit-icon">${icons[u.icon](130)}</span>
@@ -54,13 +77,24 @@ export function renderToday(main, app) {
       <h2 id="next-t">${esc(app.P(tr(next.title, lang)))}</h2>
       <div class="it-title">${itx(next.title.it)}</div>
       <p class="muted" style="margin:8px 0 16px">${esc(app.P(tr(next.goal, lang)))} <span class="faint">· ${esc(t('today.minutes', { n: num(mins) }))}</span></p>
-      <a class="btn block" href="#/lesson/${next.id}">${esc(t('start'))} ${icons.arrow(18)}</a>
+      <a class="btn block ${reviewFirst ? 'secondary' : ''}" href="#/lesson/${next.id}">${esc(resuming ? t('today.resume') : t('start'))} ${icons.arrow(18)}</a>
     </section>`;
   } else {
     nextCard = `<section class="card tint-sage"><h2>Bravissima!</h2><p style="margin-top:8px">${esc(t('today.allDone'))}</p></section>`;
   }
 
   const cheer = s.cheers?.[0];
+
+  const reviewCard = `
+      <section class="card ${reviewFirst ? 'tint-blue' : ''}" aria-labelledby="rev-t">
+        <div class="row"><span class="unit-badge hue-blue">${icons.review(24)}</span>
+          <div class="spacer"><h3 id="rev-t">${esc(t('today.review'))}</h3>
+          <p class="faint">${esc(due ? t('today.reviewCount', { n: num(due) }) : rv.due && !rv.left ? t('today.reviewCapDone') : t('today.reviewNone'))}</p></div>
+          ${due ? `<a class="btn small" href="#/review/go">${esc(t('today.reviewStart'))}</a>` : ''}
+        </div>
+        ${reviewFirst ? `<p style="margin-top:10px;font-weight:700">${esc(t('today.reviewFirst'))}</p>` : ''}
+        ${rv.backlog ? `<p class="faint" style="margin-top:8px">${esc(t('today.backlog', { n: num(rv.due - due) }))}</p>` : ''}
+      </section>`;
 
   main.innerHTML = `
     <div class="hero">${skyline({ height: 150 })}</div>
@@ -78,17 +112,32 @@ export function renderToday(main, app) {
         </div>
       </section>
 
+      ${welcomeBack ? `<section class="card tint-sage"><h3>${itx(`Bentornata, ${p.name || 'Nour'}!`)}</h3>
+        <p style="margin-top:6px">${esc(t('today.welcomeBack', { n: num(gap) }))}</p></section>` : ''}
+
+      ${iosTip ? `<section class="card tint-gold" id="ios-tip"><div class="row"><b class="spacer">${esc(t('safe.iosTitle'))}</b>
+        <button class="icon-btn" data-dismiss="ios" aria-label="${esc(t('close'))}">${icons.close(18)}</button></div>
+        <p style="margin-top:6px">${esc(t('safe.iosText'))}</p><p class="faint" style="margin-top:6px">${esc(t('safe.iosSteps'))}</p></section>` : ''}
+
       <div id="cheer-slot">${cheer ? cheerCard(cheer, app) : ''}</div>
 
-      ${nextCard}
+      ${reviewFirst ? reviewCard + nextCard : nextCard + reviewCard}
 
-      <section class="card" aria-labelledby="rev-t">
-        <div class="row"><span class="unit-badge hue-blue">${icons.review(24)}</span>
-          <div class="spacer"><h3 id="rev-t">${esc(t('today.review'))}</h3>
-          <p class="faint">${esc(due ? t('today.reviewCount', { n: num(due) }) : t('today.reviewNone'))}</p></div>
-          ${due ? `<a class="btn small" href="#/review/go">${esc(t('today.reviewStart'))}</a>` : ''}
-        </div>
-      </section>
+      ${mission ? `<section class="card tint-rose">
+        <div class="eyebrow">${icons.flag(14)} ${esc(t('mission.title'))}</div>
+        <p style="margin-top:6px;font-weight:700">${esc(app.P(tr(mission.mission, lang)))}</p>
+        <button class="btn small" style="margin-top:12px" id="mission-done" data-unit="${mission.id}">${icons.check(16)} ${esc(t('mission.done'))}</button>
+      </section>` : ''}
+
+      <a class="card row" href="#/phrasebook" style="text-decoration:none;color:inherit">
+        <span class="unit-badge hue-sage">${icons.lifebuoy(24)}</span>
+        <span class="spacer"><b>${esc(t('pb.title'))}</b><br><span class="faint">${esc(t('pb.teaser'))}</span></span>${icons.arrow(18)}
+      </a>
+
+      ${backupDue ? `<section class="card"><div class="row"><b class="spacer">${esc(t('safe.backupTitle'))}</b>
+        <button class="icon-btn" data-dismiss="backup" aria-label="${esc(t('close'))}">${icons.close(18)}</button></div>
+        <p class="faint" style="margin-top:6px">${esc(t('safe.backupText'))}</p>
+        <button class="btn secondary small" style="margin-top:10px" id="backup-now">${icons.download(16)} ${esc(t('safe.backupBtn'))}</button></section>` : ''}
 
       ${phrase ? `
       <section class="card tint-gold phrase-card">
@@ -109,6 +158,14 @@ export function renderToday(main, app) {
     </div>`;
 
   main.querySelector('#install')?.addEventListener('click', () => app.install());
+  main.querySelectorAll('[data-dismiss]').forEach((b) => b.addEventListener('click', () => {
+    store.update((st) => { st.dismissed[b.dataset.dismiss] = today; }); app.rerender();
+  }));
+  main.querySelector('#mission-done')?.addEventListener('click', (e) => {
+    store.update((st) => { st.missions[e.currentTarget.dataset.unit] = today; });
+    app.toast(t('mission.bravo')); app.rerender();
+  });
+  main.querySelector('#backup-now')?.addEventListener('click', () => backupFile(app));
 
   // Fetch partner encouragements when live sharing is configured
   if (s.share.enabled && s.share.live?.id) {

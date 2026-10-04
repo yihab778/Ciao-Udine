@@ -58,6 +58,8 @@ export function partnerDashboard(sm, lang, { preview = false } = {}) {
         <p class="muted" style="font-size:.95rem">${esc(P(tr(cu.canDo, lang)))}</p></div></div>
     </section>
 
+    ${sm.missions ? `<p class="card flat row">${icons.flag(18)} <span>${esc(t('pv.missions', { n: num(sm.missions, lang) }, lang))}</span></p>` : ''}
+
     ${ms.length ? `<section class="card"><h3>${esc(t('pv.milestones', {}, lang))}</h3>
       <div class="row wrap" style="margin-top:10px">${ms.map((m) => `<span class="chip sage">${icons.check(14)} ${esc(tr(m.title, lang))}</span>`).join('')}</div></section>` : ''}
 
