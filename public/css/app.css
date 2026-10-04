@@ -62,7 +62,7 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; min-height: 100dvh; background: var(--paper); color: var(--ink);
-  font: 17px/1.5 var(--font-body); -webkit-font-smoothing: antialiased;
+  font: calc(17px * var(--scale, 1))/1.5 var(--font-body); -webkit-font-smoothing: antialiased;
 }
 html[lang="ar"] body { font-family: var(--font-ar); }
 .it { font-family: var(--font-body); unicode-bidi: isolate; }
@@ -454,3 +454,16 @@ html[dir="rtl"] .search input { padding: 0 46px 0 16px; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .confetti { display: none; }
 }
+
+/* ───────────────────────── speaking, minimal pairs, phrasebook */
+.speak-box { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 22px; padding: 16px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); }
+.rec { width: 76px; height: 76px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-deep); flex: none; }
+.rec.on { background: var(--accent); color: #fff; animation: pulse 1s ease infinite; }
+.options.pair { grid-template-columns: 1fr 1fr; }
+.options.pair .option { justify-content: center; font-size: 1.25rem; min-height: 72px; }
+.options.pair .option .k { display: none; }
+.show-big { position: fixed; inset: 0; z-index: 80; background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 28px; text-align: center; animation: fade .2s; }
+.show-big .big { font-size: clamp(2rem, 9vw, 3.4rem); font-weight: 900; line-height: 1.15; color: var(--ink); }
+.show-big .small { font-size: 1.1rem; color: var(--ink-soft); }
+.show-big .close { position: absolute; top: 14px; inset-inline-end: 14px; }
+.word-list .ex { display: block; margin-top: 2px; font-size: .85rem; }
